@@ -1,11 +1,1027 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>PakePlus</title>
-    </head>
-    <body>
-        PakePlus
-    </body>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>猜数字游戏 1-1,000,000</title>
+    <style>
+        /* 重置样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* 全局样式 */
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            touch-action: manipulation;
+        }
+        
+        /* 游戏容器 */
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            overflow: hidden;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        /* 头部区域 */
+        .header {
+            background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: sparkle 20s linear infinite;
+            opacity: 0.3;
+        }
+        
+        .game-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        
+        .game-subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+            font-weight: 300;
+            position: relative;
+        }
+        
+        .range-display {
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 15px;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 20px;
+            border-radius: 50px;
+            display: inline-block;
+            position: relative;
+        }
+        
+        /* 游戏主体区域 */
+        .game-body {
+            padding: 30px;
+        }
+        
+        /* 状态面板 */
+        .status-panel {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .status-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+        }
+        
+        .attempts-counter {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .attempts-number {
+            font-size: 28px;
+            color: #e74c3c;
+            background: white;
+            padding: 5px 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .game-status {
+            font-size: 18px;
+            color: #34495e;
+            min-height: 30px;
+            margin-top: 15px;
+            padding: 12px;
+            background: white;
+            border-radius: 12px;
+            border-left: 5px solid #3498db;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        
+        /* 输入区域 */
+        .input-section {
+            margin-bottom: 25px;
+        }
+        
+        .input-label {
+            display: block;
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .input-label i {
+            margin-right: 10px;
+            color: #6a11cb;
+        }
+        
+        .guess-input {
+            width: 100%;
+            padding: 20px;
+            font-size: 24px;
+            font-weight: 600;
+            text-align: center;
+            border: 3px solid #ddd;
+            border-radius: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+            background: white;
+            color: #2c3e50;
+        }
+        
+        .guess-input:focus {
+            border-color: #6a11cb;
+            box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .guess-input::placeholder {
+            color: #95a5a6;
+            font-weight: normal;
+        }
+        
+        /* 按钮区域 */
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .action-button {
+            padding: 20px;
+            font-size: 18px;
+            font-weight: 700;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-button:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        }
+        
+        .action-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .action-button:hover::before {
+            left: 100%;
+        }
+        
+        .guess-button {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+        }
+        
+        .newgame-button {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .hint-button {
+            grid-column: span 2;
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+        }
+        
+        /* 结果区域 */
+        .result-section {
+            margin-bottom: 25px;
+        }
+        
+        .result-box {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 80px;
+            border: 3px solid #3498db;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .result-content {
+            font-size: 20px;
+            font-weight: 600;
+            text-align: center;
+            color: #2c3e50;
+        }
+        
+        /* 历史记录 */
+        .history-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            max-height: 250px;
+            overflow-y: auto;
+            border: 2px solid #e9ecef;
+        }
+        
+        .history-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .history-title i {
+            margin-right: 10px;
+            color: #6a11cb;
+        }
+        
+        #historyList {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .history-item {
+            padding: 12px 15px;
+            background: white;
+            border-radius: 10px;
+            border-left: 5px solid #3498db;
+            font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .history-item:hover {
+            transform: translateX(5px);
+        }
+        
+        .history-item.correct {
+            border-left-color: #2ecc71;
+            background: linear-gradient(135deg, #d5f4e6, #ffffff);
+        }
+        
+        .history-item.too-low {
+            border-left-color: #3498db;
+            background: linear-gradient(135deg, #d6eaf8, #ffffff);
+        }
+        
+        .history-item.too-high {
+            border-left-color: #e74c3c;
+            background: linear-gradient(135deg, #fadbd8, #ffffff);
+        }
+        
+        .history-item.game-over {
+            border-left-color: #7f8c8d;
+            background: linear-gradient(135deg, #f2f3f4, #ffffff);
+        }
+        
+        .history-number {
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        .history-status {
+            font-size: 14px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .status-correct {
+            background: #2ecc71;
+            color: white;
+        }
+        
+        .status-low {
+            background: #3498db;
+            color: white;
+        }
+        
+        .status-high {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes sparkle {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 600px) {
+            .game-title {
+                font-size: 26px;
+            }
+            
+            .game-subtitle {
+                font-size: 16px;
+            }
+            
+            .range-display {
+                font-size: 16px;
+                padding: 6px 15px;
+            }
+            
+            .attempts-counter {
+                font-size: 18px;
+            }
+            
+            .attempts-number {
+                font-size: 22px;
+                padding: 4px 12px;
+            }
+            
+            .game-status {
+                font-size: 16px;
+            }
+            
+            .guess-input {
+                font-size: 20px;
+                padding: 16px;
+            }
+            
+            .action-button {
+                padding: 16px;
+                font-size: 16px;
+            }
+            
+            .result-content {
+                font-size: 18px;
+            }
+            
+            .history-item {
+                font-size: 14px;
+                padding: 10px;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .buttons-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .hint-button {
+                grid-column: span 1;
+            }
+            
+            .game-body {
+                padding: 20px;
+            }
+        }
+        
+        /* 自定义滚动条 */
+        .history-section::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .history-section::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .history-section::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            border-radius: 10px;
+        }
+        
+        .history-section::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #2575fc, #6a11cb);
+        }
+        
+        /* 游戏结束特效 */
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            animation: fall linear forwards;
+        }
+        
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+    </style>
+    <!-- Font Awesome 图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- 头部 -->
+        <div class="header">
+            <h1 class="game-title">
+                <i class="fas fa-gamepad"></i> 猜数字游戏
+            </h1>
+            <p class="game-subtitle">挑战你的直觉和逻辑</p>
+            <div class="range-display">
+                <i class="fas fa-bullseye"></i> 范围: 1 - 1,000,000
+            </div>
+        </div>
+        
+        <!-- 游戏主体 -->
+        <div class="game-body">
+            <!-- 状态面板 -->
+            <div class="status-panel">
+                <div class="attempts-counter">
+                    <span><i class="fas fa-redo"></i> 剩余尝试次数:</span>
+                    <span class="attempts-number" id="attemptsLeft">20</span>
+                </div>
+                <div class="game-status" id="gameStatus">
+                    点击"新游戏"开始，你有20次机会猜出数字！
+                </div>
+            </div>
+            
+            <!-- 输入区域 -->
+            <div class="input-section">
+                <label class="input-label">
+                    <i class="fas fa-keyboard"></i> 输入你的猜测:
+                </label>
+                <input type="number" id="guessInput" class="guess-input" 
+                       placeholder="输入 1 到 1,000,000 之间的数字" 
+                       min="1" max="1000000" autocomplete="off">
+            </div>
+            
+            <!-- 按钮区域 -->
+            <div class="buttons-grid">
+                <button id="guessButton" class="action-button guess-button">
+                    <i class="fas fa-bullseye"></i> 猜数字
+                </button>
+                <button id="newGameButton" class="action-button newgame-button">
+                    <i class="fas fa-sync-alt"></i> 新游戏
+                </button>
+                <button id="hintButton" class="action-button hint-button">
+                    <i class="fas fa-lightbulb"></i> 显示提示
+                </button>
+            </div>
+            
+            <!-- 结果区域 -->
+            <div class="result-section">
+                <div class="result-box">
+                    <div class="result-content" id="resultText">
+                        等待你的第一次猜测...
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 历史记录 -->
+            <div class="history-section">
+                <div class="history-title">
+                    <i class="fas fa-history"></i> 猜测历史
+                </div>
+                <div id="historyList">
+                    <!-- 历史记录将在这里动态添加 -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 庆祝特效容器 -->
+    <div id="celebration" class="celebration"></div>
+
+    <script>
+        // 游戏变量
+        let secretNumber = 0;
+        let attempts = 0;
+        const maxAttempts = 20;
+        let gameStarted = false;
+        let gameOver = false;
+        
+        // 颜色配置
+        const colors = {
+            correct: '#2ecc71',
+            low: '#3498db',
+            high: '#e74c3c',
+            normal: '#34495e'
+        };
+        
+        // DOM元素
+        const guessInput = document.getElementById('guessInput');
+        const guessButton = document.getElementById('guessButton');
+        const newGameButton = document.getElementById('newGameButton');
+        const hintButton = document.getElementById('hintButton');
+        const attemptsLeft = document.getElementById('attemptsLeft');
+        const gameStatus = document.getElementById('gameStatus');
+        const resultText = document.getElementById('resultText');
+        const historyList = document.getElementById('historyList');
+        const celebration = document.getElementById('celebration');
+        
+        // 初始化游戏
+        function initGame() {
+            newGame();
+            
+            // 事件监听器
+            guessButton.addEventListener('click', makeGuess);
+            newGameButton.addEventListener('click', newGame);
+            hintButton.addEventListener('click', showHint);
+            guessInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    makeGuess();
+                }
+            });
+            
+            // 输入验证
+            guessInput.addEventListener('input', function() {
+                let value = parseInt(this.value);
+                if (value < 1) this.value = 1;
+                if (value > 1000000) this.value = 1000000;
+            });
+            
+            // 触摸设备优化
+            document.addEventListener('touchstart', function() {}, {passive: true});
+            
+            console.log('游戏初始化完成');
+        }
+        
+        // 开始新游戏
+        function newGame() {
+            secretNumber = Math.floor(Math.random() * 1000000) + 1;
+            attempts = 0;
+            gameStarted = true;
+            gameOver = false;
+            
+            // 重置显示
+            updateDisplay();
+            clearHistory();
+            addHistory('🎮 新游戏开始！猜一个1到1,000,000之间的数字', 'normal');
+            showMessage('新游戏开始！输入你的第一个猜测。', 'normal');
+            
+            // 清空输入框并聚焦
+            guessInput.value = '';
+            guessInput.focus();
+            
+            // 调试信息（在控制台显示）
+            console.log('🎮 新游戏开始，数字是:', formatNumber(secretNumber));
+            
+            // 播放音效（如果有）
+            playSound('start');
+        }
+        
+        // 处理猜测
+        function makeGuess() {
+            if (!gameStarted || gameOver) {
+                showMessage('请先点击"新游戏"开始游戏！', 'high');
+                return;
+            }
+            
+            const input = guessInput.value.trim();
+            if (!input) {
+                showMessage('请输入一个数字！', 'high');
+                shakeElement(guessInput);
+                return;
+            }
+            
+            const guess = parseInt(input);
+            if (isNaN(guess) || guess < 1 || guess > 1000000) {
+                showMessage('请输入1到1,000,000之间的有效数字！', 'high');
+                shakeElement(guessInput);
+                return;
+            }
+            
+            attempts++;
+            const remaining = maxAttempts - attempts;
+            
+            // 更新尝试次数
+            attemptsLeft.textContent = remaining;
+            
+            if (guess === secretNumber) {
+                // 猜对了！
+                gameOver = true;
+                showMessage(`🎉 恭喜！你猜对了！数字是 ${formatNumber(secretNumber)}`, 'correct');
+                addHistory(`第${attempts}次: ${formatNumber(guess)} ✅ 正确！`, 'correct');
+                
+                // 庆祝特效
+                createCelebration();
+                playSound('win');
+                
+                // 更新游戏状态
+                gameStatus.textContent = '🎉 游戏胜利！点击"新游戏"再玩一次。';
+                gameStatus.style.color = colors.correct;
+                
+            } else if (guess < secretNumber) {
+                // 猜小了
+                showMessage(`${formatNumber(guess)} 太小了！剩余尝试: ${remaining}`, 'low');
+                addHistory(`第${attempts}次: ${formatNumber(guess)} ↑ 太小`, 'low');
+                playSound('low');
+                
+            } else {
+                // 猜大了
+                showMessage(`${formatNumber(guess)} 太大了！剩余尝试: ${remaining}`, 'high');
+                addHistory(`第${attempts}次: ${formatNumber(guess)} ↓ 太大`, 'high');
+                playSound('high');
+            }
+            
+            // 清空输入框
+            guessInput.value = '';
+            guessInput.focus();
+            
+            // 检查游戏是否结束
+            if (remaining <= 0 && guess !== secretNumber) {
+                gameOver = true;
+                showMessage(`💀 游戏结束！数字是 ${formatNumber(secretNumber)}`, 'high');
+                addHistory(`💀 游戏结束！正确答案: ${formatNumber(secretNumber)}`, 'game-over');
+                gameStatus.textContent = '💀 机会用完了！点击"新游戏"再试一次。';
+                gameStatus.style.color = colors.high;
+                playSound('lose');
+            }
+            
+            // 自动滚动到最新历史记录
+            scrollToLatest();
+        }
+        
+        // 显示提示
+        function showHint() {
+            if (!gameStarted || gameOver) {
+                showMessage('请先开始新游戏！', 'high');
+                return;
+            }
+            
+            const remaining = maxAttempts - attempts;
+            let hints = [];
+            
+            // 根据游戏进度提供不同提示
+            if (remaining >= 15) {
+                // 基本提示
+                if (secretNumber % 2 === 0) {
+                    hints.push("🔹 数字是偶数");
+                } else {
+                    hints.push("🔹 数字是奇数");
+                }
+                
+                if (secretNumber % 10 === 0) {
+                    hints.push("🔹 数字是10的倍数");
+                }
+                
+            } else if (remaining >= 10) {
+                // 范围提示
+                const quarter = 250000; // 1,000,000 / 4
+                if (secretNumber > quarter * 3) {
+                    hints.push(`🔹 数字大于 ${formatNumber(quarter * 3)}`);
+                } else if (secretNumber > quarter * 2) {
+                    hints.push(`🔹 数字在 ${formatNumber(quarter * 2)} 到 ${formatNumber(quarter * 3)} 之间`);
+                } else if (secretNumber > quarter) {
+                    hints.push(`🔹 数字在 ${formatNumber(quarter)} 到 ${formatNumber(quarter * 2)} 之间`);
+                } else {
+                    hints.push(`🔹 数字小于 ${formatNumber(quarter)}`);
+                }
+                
+            } else if (remaining >= 5) {
+                // 更精确的提示
+                const range = 100000;
+                const lowerBound = Math.floor(secretNumber / range) * range;
+                const upperBound = lowerBound + range;
+                hints.push(`🔹 数字在 ${formatNumber(lowerBound)} 到 ${formatNumber(upperBound)} 之间`);
+                
+                // 质数提示
+                if (isPrime(secretNumber)) {
+                    hints.push("🔹 数字是质数");
+                }
+                
+            } else {
+                // 最后的机会
+                const diff = Math.abs(secretNumber - parseInt(guessInput.value || 0));
+                if (diff < 10000) {
+                    hints.push("🎯 非常接近了！继续努力！");
+                } else if (diff < 50000) {
+                    hints.push("🎯 比较接近！");
+                }
+                
+                // 最后提示
+                const lastDigit = secretNumber % 10;
+                hints.push(`🔹 数字的个位数是 ${lastDigit}`);
+            }
+            
+            // 如果没有提示，添加鼓励语句
+            if (hints.length === 0) {
+                hints.push("💪 继续努力，你能做到的！");
+            }
+            
+            // 显示提示
+            const hintText = "💡 提示：\n" + hints.join('\n');
+            showMessage(hintText, 'low');
+            playSound('hint');
+        }
+        
+        // 显示消息
+        function showMessage(message, type) {
+            resultText.textContent = message;
+            resultText.style.color = colors[type] || colors.normal;
+            
+            // 添加动画效果
+            const resultBox = resultText.parentElement;
+            resultBox.style.animation = 'none';
+            setTimeout(() => {
+                resultBox.style.animation = 'pulse 0.5s ease';
+            }, 10);
+        }
+        
+        // 添加历史记录
+        function addHistory(text, type) {
+            const historyItem = document.createElement('div');
+            historyItem.className = `history-item ${type}`;
+            
+            // 提取数字和状态
+            const parts = text.split(':');
+            const numberPart = parts[0];
+            const statusPart = parts[1] || '';
+            
+            historyItem.innerHTML = `
+                <span class="history-number">${numberPart}</span>
+                <span class="history-status status-${type}">${statusPart.trim()}</span>
+            `;
+            
+            historyList.appendChild(historyItem);
+            
+            // 限制历史记录数量
+            if (historyList.children.length > 10) {
+                historyList.removeChild(historyList.firstChild);
+            }
+        }
+        
+        // 清空历史记录
+        function clearHistory() {
+            historyList.innerHTML = '';
+        }
+        
+        // 更新显示
+        function updateDisplay() {
+            attemptsLeft.textContent = maxAttempts;
+            gameStatus.textContent = gameStarted ? '游戏进行中...' : '点击"新游戏"开始';
+            gameStatus.style.color = colors.normal;
+        }
+        
+        // 格式化数字显示（添加千位分隔符）
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+        
+        // 检查质数
+        function isPrime(num) {
+            if (num <= 1) return false;
+            if (num <= 3) return true;
+            if (num % 2 === 0 || num % 3 === 0) return false;
+            
+            for (let i = 5; i * i <= num; i += 6) {
+                if (num % i === 0 || num % (i + 2) === 0) return false;
+            }
+            return true;
+        }
+        
+        // 创建庆祝特效
+        function createCelebration() {
+            celebration.innerHTML = '';
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+            
+            for (let i = 0; i < 150; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.width = Math.random() * 10 + 5 + 'px';
+                confetti.style.height = confetti.style.width;
+                confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
+                confetti.style.animationDelay = Math.random() * 1 + 's';
+                confetti.style.opacity = Math.random() * 0.5 + 0.5;
+                
+                celebration.appendChild(confetti);
+            }
+            
+            // 3秒后清除特效
+            setTimeout(() => {
+                celebration.innerHTML = '';
+            }, 3000);
+        }
+        
+        // 播放音效（使用Web Audio API）
+        function playSound(type) {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                let frequency = 440;
+                let duration = 0.1;
+                
+                switch(type) {
+                    case 'win':
+                        frequency = 523.25; // C5
+                        duration = 0.5;
+                        break;
+                    case 'lose':
+                        frequency = 220; // A3
+                        duration = 0.3;
+                        break;
+                    case 'low':
+                        frequency = 329.63; // E4
+                        break;
+                    case 'high':
+                        frequency = 493.88; // B4
+                        break;
+                    case 'hint':
+                        frequency = 392; // G4
+                        break;
+                    case 'start':
+                        frequency = 261.63; // C4
+                        break;
+                }
+                
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + duration);
+                
+            } catch (e) {
+                // 如果音频API不可用，静默失败
+                console.log('音频播放失败:', e);
+            }
+        }
+        
+        // 元素抖动效果
+        function shakeElement(element) {
+            element.style.animation = 'none';
+            setTimeout(() => {
+                element.style.animation = 'shake 0.5s ease';
+            }, 10);
+        }
+        
+        // 滚动到最新历史记录
+        function scrollToLatest() {
+            const historySection = document.querySelector('.history-section');
+            historySection.scrollTop = historySection.scrollHeight;
+        }
+        
+        // 页面加载完成后初始化游戏
+        window.addEventListener('DOMContentLoaded', initGame);
+        
+        // PWA支持（可选）
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(error => {
+                    console.log('Service Worker 注册失败:', error);
+                });
+            });
+        }
+        
+        // 添加到主屏幕提示
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // 可以在这里显示"添加到主屏幕"按钮
+            console.log('可以添加到主屏幕');
+        });
+    </script>
+    
+    <!-- 添加一些额外的功能 -->
+    <script>
+        // 游戏统计
+        const gameStats = {
+            gamesPlayed: 0,
+            gamesWon: 0,
+            bestScore: Infinity
+        };
+        
+        // 保存游戏状态到本地存储
+        function saveGameState() {
+            const state = {
+                secretNumber,
+                attempts,
+                gameStarted,
+                gameOver,
+                stats: gameStats
+            };
+            localStorage.setItem('guessNumberGame', JSON.stringify(state));
+        }
+        
+        // 从本地存储加载游戏状态
+        function loadGameState() {
+            const saved = localStorage.getItem('guessNumberGame');
+            if (saved) {
+                const state = JSON.parse(saved);
+                secretNumber = state.secretNumber;
+                attempts = state.attempts;
+                gameStarted = state.gameStarted;
+                gameOver = state.gameOver;
+                gameStats = state.stats || gameStats;
+                
+                updateDisplay();
+                console.log('游戏状态已加载');
+            }
+        }
+        
+        // 自动保存
+        setInterval(saveGameState, 30000); // 每30秒保存一次
+        
+        // 页面可见性变化时保存
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                saveGameState();
+            }
+        });
+    </script>
+</body>
 </html>
