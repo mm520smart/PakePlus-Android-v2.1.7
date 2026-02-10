@@ -1,11 +1,196 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>PakePlus</title>
-    </head>
-    <body>
-        PakePlus
-    </body>
+<html>
+<head>
+    <title>简易俄罗斯方块测试</title>
+    <style>
+        body { margin: 0; padding: 20px; background: #333; }
+        canvas { border: 2px solid white; background: black; }
+        .controls { margin-top: 20px; }
+        button { padding: 10px; margin: 5px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <canvas id="game" width="300" height="600"></canvas>
+    <div class="controls">
+        <button onclick="move(-1)">左</button>
+        <button onclick="move(1)">右</button>
+        <button onclick="rotate()">旋转</button>
+        <button onclick="drop()">下落</button>
+        <button onclick="pause()">暂停/继续</button>
+    </div>
+    <div style="color:white;">分数: <span id="score">0</span></div>
+    
+    <script>
+        const canvas = document.getElementById('game');
+        const ctx = canvas.getContext('2d');
+        const BLOCK_SIZE = 30;
+        const COLS = 10;
+        const ROWS = 20;
+        
+        let board = Array.from({length: ROWS}, () => Array(COLS).fill(0));
+        let score = 0;
+        let paused = false;
+        let piece = null;
+        let pieceX = 3, pieceY = 0;
+        
+        // 方块定义
+        const pieces = [
+            [[1,1,1,1]], // I
+            [[2,0,0],[2,2,2]], // J
+            [[0,0,3],[3,3,3]], // L
+            [[4,4],[4,4]], // O
+            [[0,5,5],[5,5,0]], // S
+            [[0,6,0],[6,6,6]], // T
+            [[7,7,0],[0,7,7]] // Z
+        ];
+        
+        const colors = ['', 'cyan', 'blue', 'orange', 'yellow', 'green', 'purple', 'red'];
+        
+        function newPiece() {
+            const type = Math.floor(Math.random() * pieces.length);
+            piece = pieces[type];
+            pieceX = Math.floor(COLS/2) - Math.floor(piece[0].length/2);
+            pieceY = 0;
+        }
+        
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制已固定的方块
+            for(let y = 0; y < ROWS; y++) {
+                for(let x = 0; x < COLS; x++) {
+                    if(board[y][x]) {
+                        ctx.fillStyle = colors[board[y][x]];
+                        ctx.fillRect(x*BLOCK_SIZE, y*BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                        ctx.strokeStyle = 'white';
+                        ctx.strokeRect(x*BLOCK_SIZE, y*BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                    }
+                }
+            }
+            
+            // 绘制当前方块
+            if(piece) {
+                for(let y = 0; y < piece.length; y++) {
+                    for(let x = 0; x < piece[y].length; x++) {
+                        if(piece[y][x]) {
+                            ctx.fillStyle = colors[piece[y][x]];
+                            ctx.fillRect((pieceX+x)*BLOCK_SIZE, (pieceY+y)*BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                            ctx.strokeStyle = 'white';
+                            ctx.strokeRect((pieceX+x)*BLOCK_SIZE, (pieceY+y)*BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                        }
+                    }
+                }
+            }
+        }
+        
+        function move(dx) {
+            if(paused || !piece) return;
+            pieceX += dx;
+            if(collision()) pieceX -= dx;
+            draw();
+        }
+        
+        function rotate() {
+            if(paused || !piece) return;
+            const original = piece.map(row => [...row]);
+            const rows = piece.length;
+            const cols = piece[0].length;
+            const rotated = Array.from({length: cols}, () => Array(rows).fill(0));
+            
+            for(let y = 0; y < rows; y++) {
+                for(let x = 0; x < cols; x++) {
+                    rotated[x][rows-1-y] = piece[y][x];
+                }
+            }
+            
+            piece = rotated;
+            if(collision()) piece = original;
+            draw();
+        }
+        
+        function collision() {
+            for(let y = 0; y < piece.length; y++) {
+                for(let x = 0; x < piece[y].length; x++) {
+                    if(piece[y][x] && (
+                        pieceX + x < 0 || 
+                        pieceX + x >= COLS || 
+                        pieceY + y >= ROWS ||
+                        (pieceY + y >= 0 && board[pieceY + y][pieceX + x])
+                    )) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        function drop() {
+            if(paused || !piece) return;
+            pieceY++;
+            if(collision()) {
+                pieceY--;
+                for(let y = 0; y < piece.length; y++) {
+                    for(let x = 0; x < piece[y].length; x++) {
+                        if(piece[y][x]) {
+                            if(pieceY + y >= 0) {
+                                board[pieceY + y][pieceX + x] = piece[y][x];
+                            }
+                        }
+                    }
+                }
+                clearLines();
+                newPiece();
+                if(collision()) {
+                    alert('游戏结束! 分数: ' + score);
+                    reset();
+                }
+            }
+            draw();
+        }
+        
+        function clearLines() {
+            for(let y = ROWS-1; y >= 0; y--) {
+                if(board[y].every(cell => cell > 0)) {
+                    board.splice(y, 1);
+                    board.unshift(Array(COLS).fill(0));
+                    score += 100;
+                    document.getElementById('score').textContent = score;
+                    y++;
+                }
+            }
+        }
+        
+        function pause() {
+            paused = !paused;
+        }
+        
+        function reset() {
+            board = Array.from({length: ROWS}, () => Array(COLS).fill(0));
+            score = 0;
+            document.getElementById('score').textContent = score;
+            newPiece();
+            draw();
+        }
+        
+        // 初始化
+        newPiece();
+        draw();
+        
+        // 自动下落
+        setInterval(() => {
+            if(!paused) drop();
+        }, 500);
+        
+        // 键盘控制
+        document.addEventListener('keydown', e => {
+            switch(e.key) {
+                case 'ArrowLeft': move(-1); break;
+                case 'ArrowRight': move(1); break;
+                case 'ArrowDown': drop(); break;
+                case 'ArrowUp': rotate(); break;
+                case ' ': pause(); break;
+            }
+        });
+    </script>
+</body>
 </html>
