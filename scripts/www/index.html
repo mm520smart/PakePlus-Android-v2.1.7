@@ -2,418 +2,902 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌿 干支纪年 · 图形化转换器</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.2, user-scalable=yes">
+    <title>时光转盘 · 八字起例</title>
+    <!-- 转盘交互&分步导航 · 完全响应式 · 新增历史记录 -->
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Noto Serif SC', 'Ma Shan Zheng', 'Segoe UI', 'WenQuanYi Micro Hei', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Noto Serif SC', 'PingFang SC', 'Ma Shan Zheng', 'Segoe UI', sans-serif;
         }
-
         body {
-            background: linear-gradient(145deg, #f8f3e7 0%, #e8dccc 100%);
+            background: #3e2c1b;
+            background: radial-gradient(circle at 30% 40%, #5a4230, #2a1e15);
             min-height: 100vh;
             display: flex;
-            justify-content: center;
             align-items: center;
-            padding: 20px;
+            justify-content: center;
+            padding: 12px;
         }
-
-        .container {
-            max-width: 700px;
+        .app-wizard {
+            max-width: 420px;
             width: 100%;
-            background: #fef9ea;
-            background-image: radial-gradient(circle at 10% 30%, rgba(255,240,200,0.3) 0%, transparent 25%),
-                              radial-gradient(circle at 90% 70%, rgba(200,180,140,0.1) 0%, transparent 30%);
-            border-radius: 64px 64px 48px 48px;
-            box-shadow: 0 20px 35px -8px rgba(90, 60, 30, 0.3),
-                        inset 0 2px 5px rgba(255, 245, 220, 0.8);
-            border: 2px solid #cdb79e;
-            padding: 30px 25px;
-            transition: all 0.2s ease;
+            background: #fdf3e0;
+            background-image: linear-gradient(165deg, #fff7e6, #f3e3cc);
+            border-radius: 56px 56px 40px 40px;
+            box-shadow: 0 25px 35px -10px #0f0a07;
+            border: 2px solid #ad8a67;
+            padding: 22px 20px 30px;
+            position: relative;
         }
 
-        /* 仿古卷轴挂轴 */
-        .scroll-header {
+        /* 步骤面板 —— 动态切换 */
+        .step-panel {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            animation: fade 0.2s ease;
+        }
+        .step-panel.active {
+            display: flex;
+        }
+        @keyframes fade { 0%{opacity:0.6;} 100%{opacity:1;} }
+
+        /* ========= 封面场景 · 新增历史记录区 ========= */
+        .cover-scene {
+            text-align: center;
+            padding: 10px 10px 20px;
+            width: 100%;
+        }
+        .cover-logo {
+            font-size: 4.2rem;
+            text-shadow: 6px 8px 0 #bb9a79;
+            color: #2f200e;
+            margin-bottom: 5px;
+            letter-spacing: 16px;
+        }
+        .cover-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #4d2f19;
+            background: #e9d2b0;
+            display: inline-block;
+            padding: 10px 28px;
+            border-radius: 100px 20px 100px 20px;
+            border: 3px solid #ad7a55;
+            box-shadow: inset 0 -3px 0 #6b4f37;
+            margin-bottom: 12px;
+        }
+        .cover-sub {
+            color: #674f38;
+            border-top: 2px dashed #ba9a7a;
+            border-bottom: 2px dashed #ba9a7a;
+            padding: 12px 0;
+            font-size: 1.1rem;
+            margin: 15px 0 20px;
+            letter-spacing: 4px;
+        }
+        /* ---------- 历史记录卡片 ---------- */
+        .history-section {
+            background: #ddcbb2;
+            border-radius: 40px 40px 20px 20px;
+            padding: 16px 14px;
+            margin: 10px 0 20px;
+            box-shadow: inset 0 -3px 0 #8f735a, inset 0 2px 12px #ffe6bf;
+            border: 2px solid #9c8264;
+        }
+        .history-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+            color: #2d231a;
+            background: #b29473;
+            padding: 6px 16px;
+            border-radius: 50px;
+            width: fit-content;
+            color: white;
+            margin-bottom: 12px;
+            border: 1px solid #efd4a4;
+        }
+        .history-list {
+            max-height: 160px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-right: 4px;
+        }
+        .history-item {
+            background: #fcf3df;
+            border-radius: 30px 8px 30px 8px;
+            padding: 10px 16px;
+            border: 2px solid #b2895a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            box-shadow: 0 3px 0 #715b42;
+            color: #2e1e0e;
+        }
+        .history-bazi {
+            font-weight: 800;
+            font-size: 0.95rem;
+            letter-spacing: 2px;
+            background: #513e2b;
+            color: #ffddb0;
+            padding: 3px 12px;
+            border-radius: 30px;
+        }
+        .cover-btn {
+            background: #ba7b4b;
+            border-bottom: 12px solid #5f3e26;
+            font-size: 2rem;
+            padding: 14px 45px;
+            border-radius: 60px 20px 60px 20px;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 12px 0 #3f2b1b;
+            transition: 0.06s;
+            border: none;
+            width: 100%;
+            letter-spacing: 18px;
+            text-shadow: 3px 3px 0 #4c2e18;
+            cursor: pointer;
+        }
+        .cover-btn:active {
+            transform: translateY(8px);
+            box-shadow: 0 4px 0 #3f2b1b;
+            border-bottom-width: 6px;
+        }
+
+        /* ======== 通用导航条 ======== */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 28px;
+            gap: 12px;
+        }
+        .nav-btn {
+            background: #9f8b70;
+            border: none;
+            border-bottom: 6px solid #584733;
+            padding: 12px 18px;
+            border-radius: 48px 12px 48px 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #fff9e0;
+            flex: 1;
+            text-shadow: 1px 2px 0 #3f3429;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            box-shadow: 0 6px 0 #413424;
+            transition: 0.03s;
+            cursor: pointer;
+        }
+        .nav-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 1px 0 #413424;
+            border-bottom-width: 3px;
+        }
+        .finish-btn {
+            background: #4f773c;
+            border-bottom-color: #2a401f;
+            box-shadow: 0 6px 0 #25331c;
+        }
+
+        /* ======= 转盘通用 ======= */
+        .dial-panel {
+            background: #eedcbf;
+            border-radius: 110px 110px 60px 60px;
+            padding: 24px 16px;
+            margin: 5px 0 10px;
+            width: 100%;
+            box-shadow: inset 0 -5px 0 #a58463, inset 0 5px 20px #ffeac1;
+            border: 2px solid #7c6248;
+        }
+        .dial-label {
+            font-size: 1.2rem;
+            background: #51412e;
+            color: #ffddaa;
+            padding: 6px 22px;
+            border-radius: 60px;
+            margin-bottom: 22px;
+            border: 1px solid #eab767;
+            letter-spacing: 6px;
+        }
+
+        /* 同心圆转盘 —— 三层时、分、秒 */
+        .concentric-dials {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            margin: 8px 0;
+        }
+        .circle-layer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            background: rgba(161, 126, 94, 0.2);
+            border-radius: 100px;
+            padding: 14px 8px;
+        }
+        .ring-label {
+            font-size: 0.9rem;
+            color: #4d2a19;
+            font-weight: 600;
+            align-self: flex-start;
+            margin-left: 10px;
+        }
+        .slider-hour, .slider-minute, .slider-second {
+            width: 100%;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 15px;
-            padding: 0 10px;
+            gap: 12px;
         }
-
-        .scroll-end {
-            width: 50px;
-            height: 45px;
-            background: radial-gradient(ellipse at center, #b39a7b 0%, #8b6f4c 90%);
-            border-radius: 40% 40% 20% 20% / 60% 60% 30% 30%;
-            box-shadow: 0 5px 0 #5e4a33, inset 0 -2px 5px rgba(0,0,0,0.2);
-            border: 1px solid #ab8e64;
-        }
-
-        .title-section {
-            text-align: center;
-            position: relative;
-        }
-
-        .chinese-title {
-            font-size: 2.4rem;
-            font-weight: 700;
-            color: #4a3729;
-            text-shadow: 3px 3px 0 #e6d7b4, 1px 1px 0 #aa8c70;
-            letter-spacing: 12px;
-            margin-bottom: 5px;
-            word-break: keep-all;
-        }
-
-        .english-sub {
-            color: #7a5b3e;
-            background: #ede3d0;
-            display: inline-block;
-            padding: 6px 20px;
-            border-radius: 40px;
-            font-size: 0.9rem;
-            letter-spacing: 3px;
-            border: 1px dashed #aa7a4c;
-            backdrop-filter: blur(2px);
-        }
-
-        /* 天干地支展示环 — 太极双鱼灵感 */
-        .cycle-show {
-            background: #dac0a1;
-            background: linear-gradient(135deg, #ccb396, #b49171);
-            margin: 30px 10px 25px;
-            padding: 20px 15px;
-            border-radius: 120px 120px 60px 60px;
-            box-shadow: inset 0 -5px 0 #775e45, inset 0 2px 15px #ffeac2, 0 12px 18px -5px #735e4b;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid #624c37;
-        }
-
-        .stems-box, .branches-box {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 8px;
-            padding: 8px 12px;
-            background: #faf1dd;
-            border-radius: 50px;
-            margin: 5px;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        .stem-badge {
-            background: #e34f33;
-            background: linear-gradient(145deg, #c1402b, #e64c2e);
-            color: #ffefcf;
-            font-size: 1.5rem;
-            font-weight: bold;
-            width: 55px;
-            height: 55px;
+        .time-scroll {
             display: flex;
             align-items: center;
-            justify-content: center;
-            border-radius: 50% 50% 40% 40% / 60% 60% 30% 30%;
-            box-shadow: 0 6px 0 #71281c, 0 8px 10px #3f2e22;
-            border: 2px solid #ffbe8c;
-            text-shadow: 1px 2px 0 #4f1e16;
-            transform: rotate(2deg);
-            transition: 0.1s ease;
+            background: #fffaec;
+            border-radius: 60px;
+            padding: 6px 12px;
+            border: 3px solid #8b6547;
+            box-shadow: inset 0 2px 8px #ac8c6b;
+            flex: 1;
         }
-
-        .branch-badge {
-            background: #2f6a4a;
-            background: linear-gradient(145deg, #1f543e, #3b7a5e);
-            color: #fbffd2;
-            font-size: 1.5rem;
-            font-weight: bold;
-            width: 55px;
-            height: 55px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 40% 40% 50% 50% / 30% 30% 60% 60%;
-            box-shadow: 0 6px 0 #1d362a, 0 8px 10px #2f3d2e;
-            border: 2px solid #b4d382;
-            text-shadow: 1px 2px 0 #172e1e;
-            transform: rotate(-2deg);
-        }
-
-        /* 输入输出面板 — 玉璧造型 */
-        .jade-panel {
-            background: #ebdbc2;
-            background: linear-gradient(to bottom, #fcf3e0, #ddceb2);
-            border-radius: 100px 100px 80px 80px;
-            padding: 30px 25px;
-            margin: 25px 0 15px;
-            box-shadow: inset 0 -6px 0 #aa8b64, inset 0 2px 20px #fffbe6, 0 12px 18px #6b4f38;
-            border: 3px solid #a58863;
-            position: relative;
-        }
-
-        .input-area {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .year-label {
-            font-size: 1.7rem;
-            color: #452812;
-            font-weight: 600;
-            text-shadow: 2px 2px 0 #dfc9a6;
-        }
-
-        .year-input {
-            width: 140px;
-            padding: 16px 10px;
-            font-size: 2.2rem;
-            text-align: center;
-            background: #fef7d5;
-            border: 5px solid #c6a27a;
-            border-radius: 60px 20px 60px 20px;
-            color: #3f280e;
-            font-weight: 700;
-            outline: none;
-            box-shadow: inset 0 4px 10px #ac8f70, 0 6px 0 #765a3a;
-            transition: 0.08s linear;
-            font-family: 'Courier New', monospace;
-        }
-
-        .year-input:focus {
-            background: #fff1bb;
-            border-color: #a86434;
-            transform: scale(0.97);
-        }
-
-        .convert-btn {
-            background: #ca8328;
-            background: radial-gradient(circle at 30% 20%, #ffb347, #b3621c);
-            border: none;
-            border-bottom: 10px solid #6d3f0e;
-            color: white;
-            font-size: 1.9rem;
-            font-weight: bold;
-            padding: 12px 35px;
-            border-radius: 60px 20px 60px 20px;
-            letter-spacing: 12px;
-            cursor: pointer;
-            box-shadow: 0 9px 0 #4d2e0e, 0 10px 25px black;
-            transition: all 0.05s linear;
-            text-shadow: 3px 3px 0 #5f2f0a;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .convert-btn:active {
-            transform: translateY(8px);
-            box-shadow: 0 2px 0 #4d2e0e, 0 10px 25px black;
-            border-bottom-width: 4px;
-        }
-
-        /* 结果区域 — 悬挂的卷轴 */
-        .result-scroll {
-            background: #efe0c9;
-            background: linear-gradient(165deg, #fef3db, #ddc7a2);
-            border-radius: 20px 20px 60px 60px;
-            padding: 20px;
-            border: 4px double #9c7e5c;
-            box-shadow: inset 0 0 0 2px #ffffee, inset 0 0 0 5px #b29268;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 15px;
-        }
-
-        .result-year {
-            font-size: 2.2rem;
-            background: #935e38;
-            color: #fdf5cf;
-            padding: 10px 25px;
-            border-radius: 40px 10px 40px 10px;
-            font-weight: 800;
-            margin-right: 20px;
-            box-shadow: inset 0 -2px 0 #492c1a, 0 6px 0 #4d301c;
-            border: 1px solid #efc48c;
-            letter-spacing: 2px;
-        }
-
-        .result-ganzhi {
-            font-size: 3.5rem;
-            font-weight: 900;
-            background: #383018;
-            background: linear-gradient(145deg, #4d3822, #2d1e13);
-            color: #ffdd99;
-            padding: 10px 30px;
-            border-radius: 20px 60px 20px 60px;
-            box-shadow: inset 0 -5px 0 #120c07, 0 9px 0 #22180e;
-            text-shadow: 0 0 5px #ffb669, 2px 4px 0 #321f0e;
-            letter-spacing: 12px;
-            border: 2px solid #ebc17e;
-        }
-
-        .footer-note {
-            margin-top: 20px;
-            text-align: right;
-            color: #6d573d;
-            font-style: italic;
-            padding: 5px 20px;
-            border-top: 1px solid #baa07e;
-            letter-spacing: 2px;
-        }
-        .big-emoji {
+        .time-value {
             font-size: 2rem;
-            line-height: 1;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+            color: #302010;
+            background: #ffeec2;
+            padding: 0 15px;
+            border-radius: 30px;
+            line-height: 1.4;
+        }
+        .spin-arrow {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .arrow-up, .arrow-down {
+            background: #c3a07e;
+            border: none;
+            border-bottom: 4px solid #665035;
+            font-size: 1.3rem;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 0 #4b3a2b;
+            transition: 0.02s;
+            cursor: pointer;
+        }
+        .arrow-up:active, .arrow-down:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #4b3a2b;
+            border-bottom-width: 2px;
+        }
+
+        /* 月份/日期 转盘简化—— 同样转盘风格 */
+        .month-dial, .day-dial {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+        }
+        .month-item, .day-item {
+            background: #e4d4ba;
+            border-radius: 40px 12px 40px 12px;
+            padding: 12px 18px;
+            font-size: 1.6rem;
+            font-weight: 700;
+            border: 3px solid #a6794b;
+            color: #3e2c14;
+            box-shadow: 0 6px 0 #70583c;
+            transition: 0.03s;
+            min-width: 90px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .month-item.selected, .day-item.selected {
+            background: #c5935e;
+            color: #fff5d5;
+            border-color: #ffc489;
+            transform: scale(0.96);
+            box-shadow: 0 2px 0 #5f432b;
+        }
+
+        /* ========= 步骤3：月份转盘 (节气) 高度压缩为原来的80% ========= */
+        #step3 .dial-panel { padding: 19px 13px; }
+        #step3 .month-item { padding: 10px 14px; font-size: 1.4rem; min-width: 75px; margin: 0; }
+        #step3 .dial-label { margin-bottom: 16px; padding: 5px 18px; font-size: 1.1rem; }
+        #step3 .month-dial { gap: 8px; }
+        #step3 .dial-panel div[style*="margin-top: 16px"] { margin-top: 12px !important; padding: 8px !important; }
+        #step3 p { margin-top: 8px !important; font-size: 0.7rem !important; }
+
+        /* ========= 步骤5：三层同心圆 · 时分秒 高度压缩为原来的80% ========= */
+        #step5 .dial-panel { padding: 19px 13px; }
+        #step5 .dial-label { margin-bottom: 16px; padding: 5px 18px; font-size: 1.1rem; }
+        #step5 .concentric-dials { gap: 14px; margin: 6px 0; }
+        #step5 .circle-layer { padding: 11px 6px; }
+        #step5 .ring-label { font-size: 0.8rem; margin-left: 8px; margin-bottom: 2px; }
+        #step5 .time-scroll { padding: 5px 10px; border-width: 2.4px; }
+        #step5 .time-value { font-size: 1.6rem; padding: 0 12px; border-radius: 24px; }
+        #step5 .time-value + span { font-size: 1.2rem !important; }
+        #step5 .spin-arrow { gap: 1px; }
+        #step5 .arrow-up, #step5 .arrow-down { width: 38px; height: 38px; font-size: 1.1rem; border-bottom-width: 3px; box-shadow: 0 3px 0 #4b3a2b; }
+        #step5 .arrow-up:active, #step5 .arrow-down:active { transform: translateY(3px); box-shadow: 0 1px 0 #4b3a2b; border-bottom-width: 1.5px; }
+        #step5 .dial-panel div[style*="background:#4a3b2b"] { margin-top: 12px !important; padding: 5px !important; border-radius: 30px !important; }
+        #step5 .dial-panel div[style*="background:#4a3b2b"] span { font-size: 0.95rem !important; }
+
+        /* 年份输入 */
+        .year-input-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #d6bb99;
+            padding: 16px 20px;
+            border-radius: 80px;
+            margin: 15px 0;
+        }
+        .year-big {
+            font-size: 2.4rem;
+            width: 140px;
+            text-align: center;
+            background: #fff4d3;
+            border: 5px solid #966842;
+            border-radius: 40px 8px 40px 8px;
+            padding: 8px 0;
+            font-weight: 700;
+        }
+
+        /* 最终排盘结果 */
+        .bazi-panel {
+            background: #302818;
+            padding: 24px 18px;
+            border-radius: 48px 12px 48px 12px;
+            border: 3px solid #eabf7e;
+            box-shadow: inset 0 0 0 2px #1e160e;
+            margin: 18px 0 8px;
+            width: 100%;
+        }
+        .bazi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            text-align: center;
+        }
+        .bazi-item {
+            background: #fbeac5;
+            padding: 14px 4px;
+            border-radius: 30px 6px 30px 6px;
+            border: 2px solid #cfaa74;
+            color: #312017;
+            font-weight: 800;
+        }
+        .ganzhi-big {
+            font-size: 1.8rem;
+            letter-spacing: 6px;
+        }
+        .footer-note {
+            color: #bdb09b;
+            margin-top: 12px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- 仿古轴头 装饰 -->
-        <div class="scroll-header">
-            <div class="scroll-end"></div>
-            <div class="title-section">
-                <div class="chinese-title">干 支 纪 年</div>
-                <span class="english-sub">🌕 STEM & BRANCH</span>
-            </div>
-            <div class="scroll-end"></div>
-        </div>
-
-        <!-- 天干 / 地支 小徽章展示 图形化 -->
-        <div class="cycle-show">
-            <div class="stems-box">
-                <span class="stem-badge">甲</span>
-                <span class="stem-badge">乙</span>
-                <span class="stem-badge">丙</span>
-                <span class="stem-badge">丁</span>
-                <span class="stem-badge">戊</span>
-                <span class="stem-badge">己</span>
-                <span class="stem-badge">庚</span>
-                <span class="stem-badge">辛</span>
-                <span class="stem-badge">壬</span>
-                <span class="stem-badge">癸</span>
-            </div>
-            <span style="font-size:2.5rem; color:#4d2f1b; margin:0 5px; text-shadow:2px 2px 0 #e0be96;">⿻</span>
-            <div class="branches-box">
-                <span class="branch-badge">子</span>
-                <span class="branch-badge">丑</span>
-                <span class="branch-badge">寅</span>
-                <span class="branch-badge">卯</span>
-                <span class="branch-badge">辰</span>
-                <span class="branch-badge">巳</span>
-                <span class="branch-badge">午</span>
-                <span class="branch-badge">未</span>
-                <span class="branch-badge">申</span>
-                <span class="branch-badge">酉</span>
-                <span class="branch-badge">戌</span>
-                <span class="branch-badge">亥</span>
+    <div class="app-wizard">
+        <!-- ========= 步骤1：封面 · 新增历史记录 ========= -->
+        <div id="step1" class="step-panel active">
+            <div class="cover-scene">
+                <div class="cover-logo">🪐⿻</div>
+                <div class="cover-title">时·盘</div>
+                <div style="font-size:2.8rem; letter-spacing: 12px; color:#64482e;">师父专享</div>
+                <div class="cover-sub">排盘推四柱</div>
+                
+                <!-- ★ 历史记录区域 ★ -->
+                <div class="history-section">
+                    <div class="history-title">
+                        <span style="font-size:1.4rem;">📋</span> 历史排盘
+                    </div>
+                    <div id="historyList" class="history-list">
+                        <!-- 动态渲染历史记录 -->
+                    </div>
+                </div>
+                
+                <button class="cover-btn" onclick="goToStep(2)">启 盘</button>
             </div>
         </div>
 
-        <!-- 主交互面板 -->
-        <div class="jade-panel">
-            <div class="input-area">
-                <span class="year-label">📆 公元</span>
-                <input type="number" id="yearInput" class="year-input" value="2026" placeholder="年份">
-                <button id="convertBtn" class="convert-btn">
-                    <span style="font-size:2rem;">➡️</span> 轉
-                </button>
-            </div>
-
-            <!-- 干支结果显示区，动态刷新 -->
-            <div class="result-scroll">
-                <span id="displayYear" class="result-year">2026年</span>
-                <span id="displayGanzhi" class="result-ganzhi">丙午</span>
-            </div>
-            <!-- 小提示：干支基数 -->
-            <div style="text-align:center; margin-top:12px; color:#745e45; background:#e9d6ba; border-radius:30px; padding:6px; font-size:0.9rem; border:1px solid #ad886a;">
-                ⚡ 甲子为公元4年 · 60年一循环
+        <!-- ========= 步骤2：输入年份 ========= -->
+        <div id="step2" class="step-panel">
+            <div style="display: flex; flex-direction: column; align-items: center; width:100%;">
+                <span style="font-size:2rem; background: #9a7b5b; color: #fff2c4; padding:6px 30px; border-radius:0 0 40px 40px;">📆 年柱</span>
+                <div style="height: 20px;"></div>
+                <div class="dial-panel" style="background: #e7cfaf;">
+                    <div class="dial-label">⚓ 立春为界</div>
+                    <div class="year-input-area">
+                        <span style="font-size:2rem;">公元</span>
+                        <input type="number" id="yearInput" class="year-big" value="2026" min="1900" max="2100" step="1">
+                    </div>
+                    <div style="font-size:1rem; color: #553e2a; background:#ffe2b3; padding:8px; border-radius:60px;">立春前仍属上年，自动校正</div>
+                </div>
+                <div class="nav-buttons">
+                    <button class="nav-btn" onclick="goToStep(1)">◀ 上一步</button>
+                    <button class="nav-btn" onclick="goToStep(3)">下一步 ▶</button>
+                </div>
             </div>
         </div>
 
-        <div class="footer-note">
-            🐉 天干地支 · 岁月流转
+        <!-- ========= 步骤3：月份转盘 (节气) ========= -->
+        <div id="step3" class="step-panel">
+            <div style="width:100%; display: flex; flex-direction: column;">
+                <span style="font-size:1.8rem; background: #6f7e5b; color: white; padding:6px 20px; border-radius:40px 40px 0 0;">🌙 月柱 · 节气转盘</span>
+                <div class="dial-panel">
+                    <div class="dial-label"> 选月(节令)</div>
+                    <div class="month-dial" id="monthDial"></div>
+                    <div style="margin-top: 16px; background: #f8e7c9; padding: 10px; border-radius: 36px;">
+                        <span id="selectedMonthHint" style="font-size:1.4rem;">正月 立春·寅</span>
+                    </div>
+                    <p style="font-size:0.8rem; margin-top:12px;">* 以节为月令分界</p>
+                </div>
+                <div class="nav-buttons">
+                    <button class="nav-btn" onclick="goToStep(2)">◀ 上一步</button>
+                    <button class="nav-btn" onclick="goToStep(4)">下一步 ▶</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========= 步骤4：日期转盘 ========= -->
+        <div id="step4" class="step-panel">
+            <div style="width:100%;">
+                <span style="font-size:1.8rem; background: #916a42; color: white; padding:6px 30px; border-radius: 30px 30px 0 0;">☀️ 日柱</span>
+                <div class="dial-panel">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:1.2rem;">📅 日期选择</span>
+                        <span style="background:#78644b; padding:6px 16px; border-radius:40px; color:white;">万年历推演</span>
+                    </div>
+                    <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px; margin:22px 0;">
+                        <span style="font-size:2rem;">月</span>
+                        <select id="monthSelect" style="font-size:1.8rem; width:100px; text-align:center; background:#ffefcf; border-radius:30px 6px 30px 6px; border:4px solid #976b42; padding:8px;" onchange="updateDaySelect()"></select>
+                        <span style="font-size:2rem;">日</span>
+                        <select id="daySelect" style="font-size:1.8rem; width:100px; background:#ffefcf; border-radius:6px 30px 6px 30px; border:4px solid #976b42; padding:8px;"></select>
+                    </div>
+                    <div style="background:#e1cbb0; padding:8px; border-radius:40px; font-size:1.2rem;">
+                        所选：<span id="selectedDateDisplay">2026年2月12日</span>
+                    </div>
+                </div>
+                <div class="nav-buttons">
+                    <button class="nav-btn" onclick="goToStep(3)">◀ 上一步</button>
+                    <button class="nav-btn" onclick="goToStep(5)">下一步 ▶</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========= 步骤5：三层同心圆 · 时分秒 ========= -->
+        <div id="step5" class="step-panel">
+            <div style="width:100%;">
+                <span style="font-size:1.6rem; background: #2c4a3b; color: white; padding:6px 18px; border-radius: 30px 30px 0 0;">⏱️ 时·分·秒 · 三同心盘</span>
+                <div class="dial-panel" style="background: #cbb294;">
+                    <div class="concentric-dials">
+                        <!-- 时圈 -->
+                        <div class="circle-layer" style="border:3px solid #8f6e4c; border-radius: 100px;">
+                            <span class="ring-label">🕐 时 (子~亥)</span>
+                            <div class="slider-hour">
+                                <div class="time-scroll">
+                                    <span id="hourValue" class="time-value">11</span>
+                                    <span style="font-size:1.5rem;">时</span>
+                                </div>
+                                <div class="spin-arrow">
+                                    <button class="arrow-up" onclick="adjustTime('hour', 1)">▲</button>
+                                    <button class="arrow-down" onclick="adjustTime('hour', -1)">▼</button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 分圈 -->
+                        <div class="circle-layer" style="border:3px solid #9e7a5a;">
+                            <span class="ring-label">⏲️ 分</span>
+                            <div class="slider-minute">
+                                <div class="time-scroll">
+                                    <span id="minuteValue" class="time-value">30</span>
+                                    <span style="font-size:1.5rem;">分</span>
+                                </div>
+                                <div class="spin-arrow">
+                                    <button class="arrow-up" onclick="adjustTime('minute', 1)">▲</button>
+                                    <button class="arrow-down" onclick="adjustTime('minute', -1)">▼</button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 秒圈 -->
+                        <div class="circle-layer" style="border:3px solid #ac8866;">
+                            <span class="ring-label">🕒 秒</span>
+                            <div class="slider-second">
+                                <div class="time-scroll">
+                                    <span id="secondValue" class="time-value">15</span>
+                                    <span style="font-size:1.5rem;">秒</span>
+                                </div>
+                                <div class="spin-arrow">
+                                    <button class="arrow-up" onclick="adjustTime('second', 1)">▲</button>
+                                    <button class="arrow-down" onclick="adjustTime('second', -1)">▼</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background:#4a3b2b; color: #ffdcaa; padding:6px; border-radius: 36px; margin-top: 16px;">
+                        <span id="timeDisplay">11时30分15秒</span>
+                    </div>
+                </div>
+                <div class="nav-buttons">
+                    <button class="nav-btn" onclick="goToStep(4)">◀ 上一步</button>
+                    <button class="nav-btn finish-btn" onclick="completeBazi()">🔯 完成排盘</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========= 步骤6：结果(排盘) ========= -->
+        <div id="step6" class="step-panel" style="padding:10px 0;">
+            <div style="background:#dab07f; padding:10px; border-radius: 50px 50px 20px 20px; width:100%;">
+                <span style="font-size:1.8rem;">📜排盘结果</span>
+            </div>
+            <div class="bazi-panel" id="baziResultPanel">
+                <div class="bazi-grid" id="baziGrid">
+                    <div class="bazi-item"><span>年柱</span><div id="baziYear" class="ganzhi-big">丙午</div></div>
+                    <div class="bazi-item"><span>月柱</span><div id="baziMonth" class="ganzhi-big">庚寅</div></div>
+                    <div class="bazi-item"><span>日柱</span><div id="baziDay" class="ganzhi-big">乙丑</div></div>
+                    <div class="bazi-item"><span>时柱</span><div id="baziHour" class="ganzhi-big">戊子</div></div>
+                </div>
+                <div style="margin-top:20px; background:#1e1a12; padding:10px; border-radius:30px;">
+                    <p id="detailTime" style="color:#fdebb3;">公元2026年2月12日 11:30:15</p>
+                </div>
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="goToStep(5)">◀ 上一步</button>
+                <!-- ★ 首页按钮：改为记录+清空+回家 ★ -->
+                <button class="nav-btn" onclick="recordAndGoHome()">🏠 首页</button>
+            </div>
         </div>
     </div>
 
     <script>
-        (function() {
-            "use strict";
+        // ---------- 🌟 核心全局数据 ----------
+        let globalData = {
+            year: 2026,
+            month: 2,      // 公历月
+            day: 12,
+            hour: 11,
+            minute: 30,
+            second: 15,
+            solarTermMonth: 1  // 默认惊蛰（卯月）
+        };
 
-            // ---------- 正宗天干地支表（修正为癸）--------
-            const sky = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
-            const ground = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
-            
-            // 预生成60个干支名称，索引0对应 "甲子" (公元4年)
-            const year60 = [];
-            for (let i = 0; i < 60; i++) {
-                year60[i] = sky[i % 10] + ground[i % 12];
+        // ---------- 天干地支表 ----------
+        const sky = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
+        const ground = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+        const ganzhiCycle = Array.from({length:60}, (_,i)=> sky[i%10] + ground[i%12]);
+
+        // ---------- 节气月映射 ----------
+        const solarTerms = ["立春","惊蛰","清明","立夏","芒种","小暑","立秋","白露","寒露","立冬","大雪","小寒"];
+        const monthGround = ["寅","卯","辰","巳","午","未","申","酉","戌","亥","子","丑"];
+
+        // ========== 📜 历史记录系统 ==========
+        let historyRecords = [];
+
+        // 渲染历史列表
+        function renderHistory() {
+            const historyDiv = document.getElementById('historyList');
+            if (!historyDiv) return;
+            if (historyRecords.length === 0) {
+                historyDiv.innerHTML = '<div style="color:#7a5a3a; text-align:center; padding:12px; background:#f0e0c6; border-radius:30px;">✨ 暂无排盘记录</div>';
+                return;
             }
+            let html = '';
+            // 倒序显示（最新的在上）
+            for (let i = 0; i < historyRecords.length; i++) {
+                const rec = historyRecords[i];
+                html += `<div class="history-item">
+                            <span style="font-size:0.75rem; background: #cbad89; padding:4px 8px; border-radius:40px; color:#1f150d;">${rec.datetime}</span>
+                            <span class="history-bazi">${rec.bazi}</span>
+                        </div>`;
+            }
+            historyDiv.innerHTML = html;
+        }
 
-            // ---------- DOM 元素 ----------
+        // 新增历史记录
+        function addHistoryRecord(record) {
+            historyRecords.unshift(record);   // 最新记录插到最前
+            // 最多保留10条，防止溢出
+            if (historyRecords.length > 10) historyRecords.pop();
+            renderHistory();
+        }
+
+        // ---------- 五虎遁 ----------
+        function getMonthGan(yearGanIndex, monthZhiIndex) {
+            const startGanMap = {0:2,1:2, 2:8,3:8, 4:6,5:6, 6:2,7:2, 8:4,9:4};
+            let startGan = startGanMap[yearGanIndex];
+            let offset = monthZhiIndex;
+            let ganIdx = (startGan + offset) % 10;
+            return ganIdx;
+        }
+
+        // ---------- 五鼠遁 ----------
+        function getHourGan(dayGanIndex, hourZhiIndex) {
+            const wushuMap = {0:0,1:0, 2:2,3:2, 4:4,5:4, 6:6,7:6, 8:8,9:8};
+            let start = wushuMap[dayGanIndex];
+            let ganIdx = (start + hourZhiIndex) % 10;
+            return ganIdx;
+        }
+
+        function calcYearGanzhi(year) {
+            let ganIdx = (year - 4) % 10;
+            if (ganIdx < 0) ganIdx += 10;
+            let zhiIdx = (year - 4) % 12;
+            if (zhiIdx < 0) zhiIdx += 12;
+            return sky[ganIdx] + ground[zhiIdx];
+        }
+
+        function calcDayGanzhi(year, month, day) {
+            let baseYear = 2000, baseMonth = 1, baseDay = 1, baseGanZhiIndex = 30; //甲午
+            let totalDays = 0;
+            for (let y = baseYear; y < year; y++) {
+                totalDays += ( (y%4===0 && y%100!==0) || y%400===0 ) ? 366 : 365;
+            }
+            for (let m = 1; m < month; m++) totalDays += daysInMonth(year, m);
+            totalDays += (day - baseDay);
+            let idx = (baseGanZhiIndex + totalDays) % 60;
+            return ganzhiCycle[idx];
+        }
+        function daysInMonth(y,m){ return new Date(y,m,0).getDate(); }
+
+        function getHourZhi(hour, minute) {
+            let h = hour;
+            if (h === 23) return 0;
+            if (h < 0) return 0;
+            if (h === 0) return 0;
+            let zhiIdx = Math.floor((h + 1) / 2) % 12;
+            if (h === 23) zhiIdx = 0;
+            return zhiIdx;
+        }
+
+        function calcMonthGanzhi(year, termMonthIdx) {
+            let yearGanzhi = calcYearGanzhi(year);
+            let yearGan = yearGanzhi[0];
+            let yearGanIdx = sky.indexOf(yearGan);
+            let monthZhiIdx = termMonthIdx; 
+            let monthGanIdx = getMonthGan(yearGanIdx, monthZhiIdx);
+            return sky[monthGanIdx] + ground[monthZhiIdx];
+        }
+
+        function calcHourGanzhi(dayGanzhi, hourZhiIdx) {
+            let dayGan = dayGanzhi[0];
+            let dayGanIdx = sky.indexOf(dayGan);
+            let hourGanIdx = getHourGan(dayGanIdx, hourZhiIdx);
+            return sky[hourGanIdx] + ground[hourZhiIdx];
+        }
+
+        // ========== 🧹 重置所有数据为默认 · 并清除结果面板 ==========
+        function resetAllData() {
+            // 年份
+            globalData.year = 2026;
             const yearInput = document.getElementById('yearInput');
-            const convertBtn = document.getElementById('convertBtn');
-            const displayYear = document.getElementById('displayYear');
-            const displayGanzhi = document.getElementById('displayGanzhi');
+            if (yearInput) yearInput.value = 2026;
 
-            // ---------- 核心转换函数 ----------
-            function yearToGanzhi(year) {
-                // 公元4年是甲子(索引0), 公式: (year - 4) % 60, 处理负数取正模
-                let index = (year - 4) % 60;
-                if (index < 0) index += 60;   // 处理公元前（虽然输入正数，但鲁棒）
-                return year60[index];
+            // 节气月（默认惊蛰，索引1）
+            globalData.solarTermMonth = 1;
+            populateMonthDial();
+
+            // 公历月日
+            globalData.month = 2;
+            globalData.day = 12;
+            const monthSelect = document.getElementById('monthSelect');
+            if (monthSelect) monthSelect.value = 2;
+            updateDaySelect();   // 内部会基于globalData.day选中12日
+            updateDateDisplay();
+
+            // 时分秒
+            globalData.hour = 11;
+            globalData.minute = 30;
+            globalData.second = 15;
+            const hourVal = document.getElementById('hourValue');
+            if (hourVal) hourVal.innerText = 11;
+            const minuteVal = document.getElementById('minuteValue');
+            if (minuteVal) minuteVal.innerText = 30;
+            const secondVal = document.getElementById('secondValue');
+            if (secondVal) secondVal.innerText = 15;
+            updateTimeDisplay();
+
+            // 清除结果面板中的上一次排盘（删除上一次的结果）
+            const baziYear = document.getElementById('baziYear');
+            if (baziYear) baziYear.innerText = '----';
+            const baziMonth = document.getElementById('baziMonth');
+            if (baziMonth) baziMonth.innerText = '----';
+            const baziDay = document.getElementById('baziDay');
+            if (baziDay) baziDay.innerText = '----';
+            const baziHour = document.getElementById('baziHour');
+            if (baziHour) baziHour.innerText = '----';
+            const detailTime = document.getElementById('detailTime');
+            if (detailTime) detailTime.innerHTML = '';
+        }
+
+        // ========== 🏠 首页按钮行为：记录本次结果 → 清空 → 回家 ==========
+        function recordAndGoHome() {
+            // 1. 从当前globalData获取完整的四柱，构造历史记录
+            const year = globalData.year;
+            const month = globalData.month;
+            const day = globalData.day;
+            const hour = globalData.hour;
+            const minute = globalData.minute;
+            const second = globalData.second;
+            const termIdx = globalData.solarTermMonth;
+
+            const yGan = calcYearGanzhi(year);
+            const mGan = calcMonthGanzhi(year, termIdx);
+            const dGan = calcDayGanzhi(year, month, day);
+            let hourZhi = getHourZhi(hour, minute);
+            if (hour === 23) hourZhi = 0; // 子时修正
+            let hGan = calcHourGanzhi(dGan, hourZhi);
+
+            const record = {
+                datetime: `${year}年${month}月${day}日 ${hour}:${minute}:${second}`,
+                bazi: `${yGan} ${mGan} ${dGan} ${hGan}`,
+                y: yGan, m: mGan, d: dGan, h: hGan
+            };
+
+            // 2. 将本次结果添加到历史记录
+            addHistoryRecord(record);
+
+            // 3. 重置所有数据（删除上一次的结果，恢复默认）
+            resetAllData();
+
+            // 4. 回到首页封面
+            goToStep(1);
+        }
+
+        // ========== 转盘与步骤交互 ==========
+        let currentStep = 1;
+        window.goToStep = function(step) {
+            for (let i=1; i<=6; i++) {
+                let el = document.getElementById('step'+i);
+                if (el) el.classList.remove('active');
             }
-
-            // 更新界面
-            function updateDisplay() {
-                let yearStr = yearInput.value.trim();
-                if (yearStr === '') yearStr = '2026';
-                let year = Number(yearStr);
-                if (isNaN(year) || !Number.isInteger(year)) {
-                    // 容错：不是整数就默认2026
-                    year = 2026;
-                    yearInput.value = 2026;
-                }
-                const ganzhi = yearToGanzhi(year);
-                displayYear.innerText = year + '年';
-                displayGanzhi.innerText = ganzhi;
+            if (step === 6) {
+                document.getElementById('step6').classList.add('active');
+            } else {
+                let nextEl = document.getElementById('step'+step);
+                if (nextEl) nextEl.classList.add('active');
             }
+            // 进入特定步骤时刷新数据
+            if (step === 3) populateMonthDial();
+            if (step === 4) { populateMonthSelect(); updateDaySelect(); updateDateDisplay(); }
+            if (step === 5) updateTimeDisplay();
+            currentStep = step;
+        }
 
-            // ---------- 初始化 和 监听器 ----------
-            window.addEventListener('DOMContentLoaded', function() {
-                // 默认展示2026年（丙午）
-                updateDisplay();
+        // 月份转盘
+        window.populateMonthDial = function() {
+            let div = document.getElementById('monthDial');
+            if (!div) return;
+            let html = '';
+            for (let i=0; i<12; i++) {
+                let selected = (i === globalData.solarTermMonth) ? 'selected' : '';
+                html += `<div class="month-item ${selected}" data-termidx="${i}" onclick="selectTermMonth(${i})">
+                            ${solarTerms[i]}<br><span style="font-size:0.9rem;">${monthGround[i]}</span>
+                        </div>`;
+            }
+            div.innerHTML = html;
+            document.getElementById('selectedMonthHint').innerHTML = `${solarTerms[globalData.solarTermMonth]} · ${monthGround[globalData.solarTermMonth]}`;
+        }
+        window.selectTermMonth = function(idx) {
+            globalData.solarTermMonth = idx;
+            populateMonthDial();
+        }
 
-                // 转换按钮点击
-                convertBtn.addEventListener('click', function() {
-                    updateDisplay();
-                });
+        // 月份选择下拉框
+        window.populateMonthSelect = function() {
+            let sel = document.getElementById('monthSelect');
+            if (!sel) return;
+            let y = globalData.year;
+            sel.innerHTML = '';
+            for (let m=1; m<=12; m++) {
+                let opt = document.createElement('option');
+                opt.value = m;
+                opt.text = m+'月';
+                if (m === globalData.month) opt.selected = true;
+                sel.appendChild(opt);
+            }
+        }
+        window.updateDaySelect = function() {
+            let m = parseInt(document.getElementById('monthSelect').value);
+            globalData.month = m;
+            let y = globalData.year;
+            let days = daysInMonth(y, m);
+            let daySel = document.getElementById('daySelect');
+            daySel.innerHTML = '';
+            let currDay = globalData.day;
+            if (currDay > days) currDay = days;
+            for (let d=1; d<=days; d++) {
+                let opt = document.createElement('option');
+                opt.value = d;
+                opt.text = d+'日';
+                if (d === currDay) opt.selected = true;
+                daySel.appendChild(opt);
+            }
+            globalData.day = currDay;
+            updateDateDisplay();
+        }
+        window.updateDateDisplay = function() {
+            let m = document.getElementById('monthSelect')?.value || globalData.month;
+            let d = document.getElementById('daySelect')?.value || globalData.day;
+            globalData.month = parseInt(m);
+            globalData.day = parseInt(d);
+            document.getElementById('selectedDateDisplay').innerText = `${globalData.year}年${globalData.month}月${globalData.day}日`;
+        }
 
-                // 输入框支持回车
-                yearInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        updateDisplay();
-                    }
-                });
+        // 时分秒调整
+        window.adjustTime = function(type, delta) {
+            if (type === 'hour') { globalData.hour = (globalData.hour + delta + 24) % 24; document.getElementById('hourValue').innerText = globalData.hour; }
+            if (type === 'minute') { globalData.minute = (globalData.minute + delta + 60) % 60; document.getElementById('minuteValue').innerText = globalData.minute; }
+            if (type === 'second') { globalData.second = (globalData.second + delta + 60) % 60; document.getElementById('secondValue').innerText = globalData.second; }
+            updateTimeDisplay();
+        }
+        function updateTimeDisplay() {
+            document.getElementById('hourValue').innerText = globalData.hour;
+            document.getElementById('minuteValue').innerText = globalData.minute;
+            document.getElementById('secondValue').innerText = globalData.second;
+            document.getElementById('timeDisplay').innerHTML = `${globalData.hour}时${globalData.minute}分${globalData.second}秒`;
+        }
 
-                // 上下箭头调整后自动更新 (input事件)
-                yearInput.addEventListener('input', function() {
-                    // 避免空字符串或者加减号时候显示突兀，也可直接更新
-                    updateDisplay();
-                });
+        // 完成排盘 -> 显示结果
+        window.completeBazi = function() {
+            let year = parseInt(document.getElementById('yearInput')?.value || 2026);
+            globalData.year = year;
+            globalData.month = parseInt(document.getElementById('monthSelect')?.value || 2);
+            globalData.day = parseInt(document.getElementById('daySelect')?.value || 12);
+            let yGan = calcYearGanzhi(year);
+            let mGan = calcMonthGanzhi(year, globalData.solarTermMonth);
+            let dGan = calcDayGanzhi(year, globalData.month, globalData.day);
+            let hourZhiIdx = getHourZhi(globalData.hour, globalData.minute);
+            let hGan = calcHourGanzhi(dGan, hourZhiIdx);
+            if (globalData.hour === 23) { hourZhiIdx = 0; hGan = calcHourGanzhi(dGan, hourZhiIdx); }
+
+            document.getElementById('baziYear').innerText = yGan;
+            document.getElementById('baziMonth').innerText = mGan;
+            document.getElementById('baziDay').innerText = dGan;
+            document.getElementById('baziHour').innerText = hGan;
+            document.getElementById('detailTime').innerHTML = `公元${year}年${globalData.month}月${globalData.day}日 ${globalData.hour}:${globalData.minute}:${globalData.second} · 节气月:${solarTerms[globalData.solarTermMonth]}`;
+            goToStep(6);
+        }
+
+        // ---------- 页面启动初始化 ----------
+        window.onload = function() {
+            // 先设置默认UI
+            populateMonthDial();
+            populateMonthSelect();
+            updateDaySelect();
+            updateDateDisplay();
+            updateTimeDisplay();
+            // 绑定年份输入监听
+            document.getElementById('yearInput').addEventListener('input', function(e){
+                globalData.year = parseInt(e.target.value) || 2026;
             });
-
-        })();
+            // 清空结果面板显示为占位符（但一开始无结果）
+            resetAllData();   // 确保初始状态干净，同时清空结果面板、恢复默认值
+            // 初次历史列表渲染
+            renderHistory();
+        };
     </script>
 </body>
 </html>
