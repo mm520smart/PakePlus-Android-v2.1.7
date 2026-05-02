@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>自由抽取器 - 手机适配版</title>
+    <title>自由抽取器 - 双页面版</title>
     <style>
         * {
             margin: 0;
@@ -14,59 +14,86 @@
         body {
             background: linear-gradient(145deg, #1a2a3a 0%, #0f1a24 100%);
             min-height: 100vh;
-            padding: 16px;
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
+            padding: 12px;
         }
-        .app-container {
-            max-width: 700px;
+        /* 主容器 - 手机紧凑 */
+        .app-wrapper {
             width: 100%;
+            max-width: 550px;
             margin: 0 auto;
             background: rgba(255,255,255,0.08);
             backdrop-filter: blur(8px);
             border-radius: 28px;
-            padding: 16px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
+            overflow: hidden;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.15);
         }
-        /* 面板通用 */
+        /* 页面容器 */
+        .page {
+            padding: 18px 16px 20px;
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        /* 底部导航栏 */
+        .nav-bar {
+            display: flex;
+            background: rgba(20, 25, 35, 0.9);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(255,255,255,0.15);
+        }
+        .nav-btn {
+            flex: 1;
+            text-align: center;
+            padding: 14px 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #ccddee;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 1px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .nav-btn.active {
+            color: #F39C12;
+            background: rgba(243,156,18,0.1);
+            border-bottom: 2px solid #F39C12;
+        }
+        /* 面板样式 - 更紧凑 */
         .settings-panel, .draw-panel {
             background: rgba(30,35,45,0.7);
-            border-radius: 24px;
-            padding: 18px 16px;
-            margin-bottom: 20px;
-            backdrop-filter: blur(4px);
-        }
-        .panel-title {
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: #FFE6C7;
-            border-left: 5px solid #F39C12;
-            padding-left: 12px;
+            border-radius: 20px;
+            padding: 14px;
             margin-bottom: 16px;
         }
-        /* 双栏在手机下变成上下排列 */
-        .flex-row {
+        .panel-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #FFE6C7;
+            border-left: 4px solid #F39C12;
+            padding-left: 10px;
+            margin-bottom: 12px;
+        }
+        .flex-col {
             display: flex;
             flex-direction: column;
-            gap: 18px;
-        }
-        .option-editor, .option-batch {
-            width: 100%;
+            gap: 12px;
         }
         textarea, input {
             width: 100%;
             background: #1e2a32;
             border: 1px solid #4a6272;
-            border-radius: 16px;
-            padding: 12px 14px;
+            border-radius: 14px;
+            padding: 10px 12px;
             color: #f0f0f0;
-            font-size: 1rem;
-            resize: vertical;
+            font-size: 0.9rem;
             outline: none;
-            transition: 0.2s;
-            -webkit-appearance: none;
         }
         textarea:focus, input:focus {
             border-color: #F39C12;
@@ -75,222 +102,183 @@
         button {
             background: linear-gradient(135deg, #3a5e6e, #2c4858);
             border: none;
-            padding: 10px 20px;
-            border-radius: 40px;
+            padding: 8px 16px;
+            border-radius: 32px;
             font-weight: 500;
             color: white;
             cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            font-size: 0.9rem;
-            min-height: 44px; /* 移动端增大点击区域 */
-            -webkit-tap-highlight-color: transparent;
+            font-size: 0.85rem;
+            min-height: 40px;
+            transition: 0.2s;
         }
         button.primary {
             background: linear-gradient(135deg, #F39C12, #E67E22);
-            color: white;
             font-weight: bold;
-            box-shadow: 0 4px 10px rgba(243,156,18,0.3);
-        }
-        button.primary:hover {
-            transform: translateY(-2px);
-            filter: brightness(1.05);
         }
         button.danger {
             background: #862e2e;
         }
-        button.warning {
-            background: #b86f2c;
-        }
-        button:active {
-            transform: translateY(1px);
-        }
-        /* 选项列表区域 */
         .items-list {
             background: #141e26;
-            border-radius: 20px;
-            padding: 12px;
-            max-height: 280px;
+            border-radius: 16px;
+            padding: 10px;
+            max-height: 240px;
             overflow-y: auto;
-            margin-top: 16px;
+            margin-top: 10px;
         }
         .item-tag {
             background: #2a3b44;
-            margin: 6px 6px 6px 0;
-            padding: 8px 14px;
-            border-radius: 40px;
+            margin: 4px 6px 4px 0;
+            padding: 6px 12px;
+            border-radius: 32px;
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            font-size: 0.9rem;
+            gap: 8px;
+            font-size: 0.85rem;
             color: #f5f5f5;
-            transition: 0.1s;
-        }
-        .item-tag span {
-            max-width: 180px;
-            word-break: break-word;
         }
         .del-btn {
             background: none;
             border: none;
             color: #ffaaaa;
-            font-size: 1.3rem;
+            font-size: 1.2rem;
+            padding: 0 4px;
             cursor: pointer;
-            padding: 0 6px;
-            box-shadow: none;
-            line-height: 1;
             min-height: auto;
-        }
-        .del-btn:hover {
-            color: #ff5e5e;
-            transform: scale(1.1);
         }
         .result-card {
             background: #1f2e36;
-            border-radius: 28px;
-            padding: 24px 16px;
+            border-radius: 24px;
+            padding: 20px 12px;
             text-align: center;
-            margin: 16px 0;
+            margin: 12px 0;
             border: 1px solid #f39c1240;
         }
-        .result-label {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #FFD966;
-        }
         .result-content {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 800;
             color: #FFE5B4;
             word-break: break-word;
-            margin: 12px 0;
+            margin: 8px 0;
         }
         .check-row {
             display: flex;
             align-items: center;
+            gap: 10px;
             flex-wrap: wrap;
-            gap: 12px;
-            margin: 12px 0 8px;
+            margin: 10px 0;
         }
         .history-info {
-            font-size: 0.8rem;
-            color: #bbd4e3;
+            font-size: 0.75rem;
             background: #00000033;
-            border-radius: 40px;
-            padding: 6px 14px;
-            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            color: #bbd4e3;
         }
         .empty-hint {
-            color: #adccdd;
             text-align: center;
-            padding: 24px 12px;
+            padding: 20px;
+            color: #adccdd;
             font-style: italic;
         }
-        /* 底部消息 */
         #drawMessage {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             text-align: center;
-            margin-top: 12px;
             color: #ffc285;
-            min-height: 36px;
+            min-height: 32px;
         }
-        /* 滚动条优化 */
-        ::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
+        .row-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 8px;
         }
-        ::-webkit-scrollbar-track {
-            background: #1e2a32;
-            border-radius: 10px;
+        hr {
+            margin: 8px 0;
+            border-color: #4a627250;
         }
-        ::-webkit-scrollbar-thumb {
-            background: #F39C12;
-            border-radius: 10px;
-        }
-        /* 手机小屏幕额外优化 */
+        /* 手机小屏幕进一步压缩 */
         @media (max-width: 480px) {
-            body {
-                padding: 12px;
-            }
-            .app-container {
+            .page {
                 padding: 12px;
             }
             .panel-title {
-                font-size: 1.3rem;
+                font-size: 1.1rem;
             }
             .result-content {
-                font-size: 1.6rem;
-            }
-            button {
-                padding: 8px 16px;
-                font-size: 0.85rem;
-            }
-            .item-tag {
-                padding: 6px 12px;
-                font-size: 0.85rem;
+                font-size: 1.5rem;
             }
         }
     </style>
 </head>
 <body>
-<div class="app-container">
-    <!-- 设定区域 -->
-    <div class="settings-panel">
-        <div class="panel-title">设定抽取内容</div>
-        <div class="flex-row">
-            <div class="option-editor">
-                <div style="margin-bottom: 8px; font-size:0.85rem; color:#ffde9e;">单个添加</div>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="newItemInput" placeholder="例如：奶茶 / 散步 / 写代码" style="flex:2;">
-                    <button id="addItemBtn" class="primary">+ 添加</button>
+<div class="app-wrapper">
+    <!-- 页面1：设定内容 -->
+    <div id="pageSettings" class="page active">
+        <div class="settings-panel">
+            <div class="panel-title">设定抽取内容</div>
+            <div class="flex-col">
+                <div>
+                    <div style="font-size:0.8rem; margin-bottom: 6px; color:#ffde9e;">单个添加</div>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="newItemInput" placeholder="例如：奶茶 / 散步" style="flex:2;">
+                        <button id="addItemBtn" class="primary">添加</button>
+                    </div>
                 </div>
-                <div class="items-list" id="itemsListContainer">
-                    <div class="empty-hint">暂无选项，请添加内容或批量导入</div>
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 12px;">
-                    <button id="clearAllItemsBtn" class="danger">清空所有</button>
+                <div>
+                    <div style="font-size:0.8rem; margin-bottom: 6px; color:#ffde9e;">批量导入 (每行一项)</div>
+                    <textarea id="batchItems" rows="2" placeholder="跑步&#10;读书&#10;看电影"></textarea>
+                    <div style="display: flex; gap: 8px; margin-top: 8px;">
+                        <button id="importBatchBtn" style="flex:1;">导入并替换</button>
+                        <button id="loadExampleBtn" style="flex:1;">示例选项</button>
+                    </div>
                 </div>
             </div>
-            <div class="option-batch">
-                <div style="margin-bottom: 8px; font-size:0.85rem; color:#ffde9e;">批量导入 (每行一项)</div>
-                <textarea id="batchItems" rows="4" placeholder="例如：&#10;跑步&#10;读书&#10;看电影&#10;学编程"></textarea>
-                <button id="importBatchBtn" style="margin-top: 10px; width: 100%;">导入并替换</button>
-                <div style="font-size:0.75rem; margin-top: 8px; color:#b9cedb;">也可使用预设示例</div>
-                <button id="loadExampleBtn" style="margin-top: 4px; background:#355c6b;">加载示例选项</button>
+            <div class="items-list" id="itemsListContainer">
+                <div class="empty-hint">暂无选项，请添加</div>
+            </div>
+            <div class="row-buttons">
+                <button id="clearAllItemsBtn" class="danger">清空所有</button>
             </div>
         </div>
     </div>
 
-    <!-- 抽取区域 -->
-    <div class="draw-panel">
-        <div class="panel-title">随机抽取器</div>
-        <div class="check-row">
-            <label style="display: flex; align-items: center; gap: 8px; color:#FFE0A3; cursor: pointer;">
-                <input type="checkbox" id="allowRepeatCheckbox" checked> 允许重复抽取
-            </label>
-            <button id="resetDrawHistoryBtn" style="background:#4d5e6b;">重置抽取记录</button>
-            <span class="history-info" id="historyStatus">已抽取: 0 / 总数: 0</span>
-        </div>
-
-        <div class="result-card" id="resultCard">
-            <div class="result-label">本次抽中</div>
-            <div class="result-content" id="drawResult">—</div>
-            <div style="margin-top: 15px;">
-                <button id="drawBtn" class="primary" style="font-size:1.2rem; padding: 10px 28px;">随机抽取</button>
+    <!-- 页面2：随机抽取 -->
+    <div id="pageDraw" class="page">
+        <div class="draw-panel">
+            <div class="panel-title">随机抽取器</div>
+            <div class="check-row">
+                <label style="display: flex; align-items: center; gap: 6px; color:#FFE0A3;">
+                    <input type="checkbox" id="allowRepeatCheckbox" checked> 允许重复
+                </label>
+                <button id="resetDrawHistoryBtn">重置记录</button>
+                <span class="history-info" id="historyStatus">0 / 0</span>
             </div>
+            <div class="result-card">
+                <div class="result-content" id="drawResult">—</div>
+                <button id="drawBtn" class="primary" style="margin-top: 8px; width: 80%;">随机抽取</button>
+            </div>
+            <div id="drawMessage"></div>
         </div>
-        <div id="drawMessage"></div>
+    </div>
+
+    <!-- 底部导航 -->
+    <div class="nav-bar">
+        <button class="nav-btn active" data-page="settings">设定内容</button>
+        <button class="nav-btn" data-page="draw">随机抽取</button>
     </div>
 </div>
 
 <script>
-    // 核心状态
+    // --- 核心数据 ---
     let items = [];            // { id, text }
-    let drawnIds = new Set();  // 已抽取过的id（仅在非重复模式下生效）
+    let drawnIds = new Set();
     let nextId = 1;
 
     // DOM 元素
+    const pageSettings = document.getElementById('pageSettings');
+    const pageDraw = document.getElementById('pageDraw');
+    const navBtns = document.querySelectorAll('.nav-btn');
     const itemsContainer = document.getElementById('itemsListContainer');
     const newItemInput = document.getElementById('newItemInput');
     const addBtn = document.getElementById('addItemBtn');
@@ -305,14 +293,14 @@
     const historyStatusSpan = document.getElementById('historyStatus');
     const drawMessageDiv = document.getElementById('drawMessage');
 
-    // 本地存储
+    // --- 本地存储 ---
     function saveToLocalStorage() {
-        const dataToStore = {
+        const data = {
             items: items,
-            drawnIds: drawnIds.size > 0 ? Array.from(drawnIds) : [],
+            drawnIds: Array.from(drawnIds),
             nextId: nextId
         };
-        localStorage.setItem('randomPickerData', JSON.stringify(dataToStore));
+        localStorage.setItem('randomPickerData', JSON.stringify(data));
     }
 
     function loadFromLocalStorage() {
@@ -323,30 +311,25 @@
             if (data.items && Array.isArray(data.items)) {
                 items = data.items;
                 nextId = data.nextId || (items.length ? Math.max(...items.map(i=>i.id), 0)+1 : 1);
-                if (data.drawnIds && Array.isArray(data.drawnIds)) {
-                    drawnIds = new Set(data.drawnIds);
-                } else {
-                    drawnIds.clear();
-                }
+                drawnIds = new Set(data.drawnIds || []);
                 return true;
             }
-        } catch(e) { console.warn(e); }
+        } catch(e) {}
         return false;
     }
 
-    // 刷新选项列表UI
+    // --- UI 渲染 ---
     function renderItemsList() {
         if (!itemsContainer) return;
         if (items.length === 0) {
             itemsContainer.innerHTML = '<div class="empty-hint">暂无选项，请添加内容或批量导入</div>';
             updateHistoryInfo();
-            drawMessageDiv.innerHTML = '';
             return;
         }
         const container = document.createElement('div');
         container.style.display = 'flex';
         container.style.flexWrap = 'wrap';
-        container.style.gap = '8px';
+        container.style.gap = '6px';
         items.forEach(item => {
             const tag = document.createElement('div');
             tag.className = 'item-tag';
@@ -377,7 +360,7 @@
         if (items.length === 0) drawnIds.clear();
         saveToLocalStorage();
         renderItemsList();
-        // 如果当前显示的结果是被删除的项，清空结果
+        // 如果当前抽取结果显示的是被删项，清空结果
         const currentDisplay = drawResultSpan.innerText;
         const deletedText = items.find(it=>it.id===id)?.text;
         if (deletedText && currentDisplay === deletedText) {
@@ -391,15 +374,14 @@
         if (!text || text.trim() === '') return false;
         const trimmed = text.trim();
         if (items.some(item => item.text === trimmed)) {
-            drawMessageDiv.innerHTML = '警告：选项已存在，未重复添加';
+            drawMessageDiv.innerHTML = '警告：选项已存在';
             return false;
         }
-        const newItem = { id: nextId++, text: trimmed };
-        items.push(newItem);
+        items.push({ id: nextId++, text: trimmed });
         saveToLocalStorage();
         renderItemsList();
         drawMessageDiv.innerHTML = '已添加: ' + escapeHtml(trimmed);
-        setTimeout(() => { if(drawMessageDiv.innerHTML.includes('已添加')) drawMessageDiv.innerHTML = ''; }, 1500);
+        setTimeout(() => { if(drawMessageDiv.innerHTML.includes('已添加')) drawMessageDiv.innerHTML = ''; }, 1200);
         return true;
     }
 
@@ -413,7 +395,7 @@
             renderItemsList();
             drawResultSpan.innerText = '—';
             drawMessageDiv.innerHTML = '所有选项已清空';
-            setTimeout(() => drawMessageDiv.innerHTML = '', 1500);
+            setTimeout(() => drawMessageDiv.innerHTML = '', 1200);
         }
     }
 
@@ -428,7 +410,7 @@
             }
         }
         if (newItems.length === 0) {
-            drawMessageDiv.innerHTML = '批量导入失败：没有有效的非空行';
+            drawMessageDiv.innerHTML = '无有效内容，导入失败';
             return;
         }
         items = newItems;
@@ -436,12 +418,12 @@
         saveToLocalStorage();
         renderItemsList();
         drawResultSpan.innerText = '—';
-        drawMessageDiv.innerHTML = '批量导入成功，共 ' + items.length + ' 项';
-        setTimeout(() => drawMessageDiv.innerHTML = '', 2000);
+        drawMessageDiv.innerHTML = '导入成功，共 ' + items.length + ' 项';
+        setTimeout(() => drawMessageDiv.innerHTML = '', 1800);
     }
 
     function loadExample() {
-        const exampleList = ["跑步", "读书", "看电影", "学编程", "听音乐", "写日记"];
+        const exampleList = ["跑步", "读书", "看电影", "学编程", "听音乐"];
         const newItems = [];
         let newId = 1;
         for (let txt of exampleList) {
@@ -453,72 +435,64 @@
         saveToLocalStorage();
         renderItemsList();
         drawResultSpan.innerText = '—';
-        drawMessageDiv.innerHTML = '已加载示例选项 (6项)';
-        setTimeout(() => drawMessageDiv.innerHTML = '', 1500);
+        drawMessageDiv.innerHTML = '已加载示例 (5项)';
+        setTimeout(() => drawMessageDiv.innerHTML = '', 1200);
     }
 
     function resetDrawHistory() {
         drawnIds.clear();
         saveToLocalStorage();
         updateHistoryInfo();
-        drawMessageDiv.innerHTML = '抽取记录已重置，所有选项均可再次抽取';
-        setTimeout(() => drawMessageDiv.innerHTML = '', 1500);
+        drawMessageDiv.innerHTML = '抽取记录已重置';
+        setTimeout(() => drawMessageDiv.innerHTML = '', 1200);
     }
 
     function updateHistoryInfo() {
         const total = items.length;
         let drawnCount = 0;
         if (!allowRepeatCheck.checked) {
-            let validDrawn = 0;
+            let valid = 0;
             for (let id of drawnIds) {
-                if (items.some(it => it.id === id)) validDrawn++;
+                if (items.some(it => it.id === id)) valid++;
             }
-            drawnCount = validDrawn;
-        } else {
-            drawnCount = 0;
+            drawnCount = valid;
         }
-        historyStatusSpan.innerText = `已抽取: ${drawnCount} / 总数: ${total}`;
+        historyStatusSpan.innerText = `${drawnCount} / ${total}`;
         if (!allowRepeatCheck.checked && drawnCount === total && total > 0) {
-            drawMessageDiv.innerHTML = '注意：所有选项都已抽取过，如需继续抽取请开启“允许重复”或重置记录。';
-        } else if (drawMessageDiv.innerHTML.includes('所有选项都已抽取') && drawnCount !== total) {
-            drawMessageDiv.innerHTML = '';
+            drawMessageDiv.innerHTML = '所有选项已抽完，请开启重复或重置记录';
         }
     }
 
     function performDraw() {
         if (items.length === 0) {
-            drawMessageDiv.innerHTML = '没有可抽取的选项，请先添加内容。';
+            drawMessageDiv.innerHTML = '没有可抽取的选项，请先添加内容';
             drawResultSpan.innerText = '—';
             return;
         }
-
         const allowRepeat = allowRepeatCheck.checked;
-        let availableItems = [];
+        let available = [];
         if (!allowRepeat) {
-            availableItems = items.filter(item => !drawnIds.has(item.id));
-            if (availableItems.length === 0) {
-                drawMessageDiv.innerHTML = '所有选项均已抽取，请打开“允许重复抽取”或点击“重置抽取记录”。';
+            available = items.filter(item => !drawnIds.has(item.id));
+            if (available.length === 0) {
+                drawMessageDiv.innerHTML = '已无未抽选项，请开启重复或重置记录';
                 return;
             }
         } else {
-            availableItems = [...items];
+            available = [...items];
         }
-
-        const randomIndex = Math.floor(Math.random() * availableItems.length);
-        const selected = availableItems[randomIndex];
-
+        const randomIndex = Math.floor(Math.random() * available.length);
+        const selected = available[randomIndex];
         drawResultSpan.innerText = selected.text;
-
         if (!allowRepeat) {
             drawnIds.add(selected.id);
             saveToLocalStorage();
         }
         updateHistoryInfo();
-        drawMessageDiv.innerHTML = allowRepeat ? '抽取完成 (可重复模式)' : '抽取完成，此选项已标记';
+        drawMessageDiv.innerHTML = allowRepeat ? '抽取完成' : '已标记，不再重复';
         setTimeout(() => {
-            if(drawMessageDiv.innerHTML === '抽取完成 (可重复模式)' || drawMessageDiv.innerHTML === '抽取完成，此选项已标记')
+            if (drawMessageDiv.innerHTML === '抽取完成' || drawMessageDiv.innerHTML === '已标记，不再重复')
                 drawMessageDiv.innerHTML = '';
-        }, 1200);
+        }, 1000);
     }
 
     function escapeHtml(str) {
@@ -530,7 +504,25 @@
         });
     }
 
-    // 事件绑定
+    // 页面切换
+    function switchPage(pageId) {
+        if (pageId === 'settings') {
+            pageSettings.classList.add('active');
+            pageDraw.classList.remove('active');
+        } else {
+            pageDraw.classList.add('active');
+            pageSettings.classList.remove('active');
+        }
+        navBtns.forEach(btn => {
+            if (btn.getAttribute('data-page') === pageId) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+
+    // --- 事件绑定 ---
     addBtn.addEventListener('click', () => {
         const val = newItemInput.value;
         if (addItem(val)) newItemInput.value = '';
@@ -547,7 +539,7 @@
     importBtn.addEventListener('click', () => {
         const raw = batchTextarea.value;
         if (!raw.trim()) {
-            drawMessageDiv.innerHTML = '请先在文本框内填写内容 (每行一项)';
+            drawMessageDiv.innerHTML = '请填写内容，每行一项';
             return;
         }
         importBatchReplace(raw);
@@ -565,12 +557,16 @@
             }
             saveToLocalStorage();
             updateHistoryInfo();
-        } else {
-            updateHistoryInfo();
         }
     });
+    navBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const page = btn.getAttribute('data-page');
+            switchPage(page);
+        });
+    });
 
-    // 初始化
+    // --- 初始化 ---
     if (!loadFromLocalStorage()) {
         items = [];
         nextId = 1;
@@ -578,6 +574,8 @@
     }
     renderItemsList();
     updateHistoryInfo();
+    // 默认显示设定页，抽取页结果同步
+    if (items.length === 0) drawResultSpan.innerText = '—';
 </script>
 </body>
 </html>
