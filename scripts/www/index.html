@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>终极全功能科学计算器</title>
+    <title>calculation</title>
     <style>
         * {
             margin: 0;
@@ -159,7 +159,7 @@
 
             <button class="num zero" onclick="appendNum('0')">0</button>
             <button class="num" onclick="appendNum('.')">.</button>
-            <button class="func" onclick="inputFunc('floor')">取整</button>
+            <button class="func" onclick="inputFunc('floor')">int</button>
             <button class="func" onclick="inputFunc('exp')">eˣ</button>
         </div>
     </div>
@@ -299,7 +299,7 @@
                 prev = '';
                 operator = '';
             } catch(e) {
-                current = '计算错误';
+                current = 'error';
             }
             updateDisplay();
         }
